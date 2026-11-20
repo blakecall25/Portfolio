@@ -60,7 +60,7 @@
     "href": "index.html#the-question",
     "title": "MLB Pitching Workload 2026",
     "section": "The question",
-    "text": "The question\nIn one or two short paragraphs, introduce the setting, audience, focused research question, data source, observational unit, response, important predictors, and one important data limitation. Lead with what makes the question worth answering. TRY this"
+    "text": "The question\nMajor League Baseball front offices, pitching coaches, and player development staff invest heavily in pitcher health and in-game bullpen management, making it critical to distinguish genuine physical fatigue from simple pitch-count heuristics. This case study asks: How effectively do a starting pitcher’s workload (pitch count) and command (walks and strikeouts), after controlling for average velocity and spin rate, predict runs allowed per start in September 2025?\nTo answer this question, we aggregated pitch-level MLB Advanced Media (Statcast) tracking data from the September 2025 regular season using the baseballr R package. Each observational unit is an individual starting pitcher appearance (\\(n = 246\\) starts), with total runs allowed (runs_allowed) as the response variable and five key predictors: pitch_count, walks, strikeouts, avg_velocity, and avg_spin_rate. A central data limitation is managerial selection bias (survival bias): because managers pull struggling pitchers early, higher pitch counts appear artificially linked to fewer runs allowed unless command and pitch quality are accounted for."
   },
   {
     "objectID": "index.html#what-the-baseline-shows",
