@@ -21,13 +21,74 @@ To answer this question, we aggregated pitch-level MLB Advanced Media (Statcast)
 ## What the baseline shows
 
 **Describe and justify a simple course-based baseline regression model. Interpret the result that best establishes the rest of the story, including its direction, magnitude, scale, and uncertainty. Explain one limitation or unresolved pattern that motivates deeper analysis.**
+We fit a simple linear regression (SLR) predicting runs allowed per start from pitch count alone ($\text{runs\_allowed}_i = \beta_0 + \beta_1\,\text{pitch\_count}_i + \epsilon_i$). This baseline directly tests the naive assumption that heavier in-game workloads correspond to more runs allowed.
+
+Contrary to that intuition, the fitted slope is negative and statistically significant ($\hat{\beta}_1 = -0.019$, $p = 0.007$), meaning every additional 10 pitches thrown is associated with roughly 0.19 fewer runs allowed on average. Still, pitch count alone explains less than 3% of the variance in scoring ($R^2 = 0.0294$), leaving wide uncertainty around individual outings. This counterintuitive negative trend reflects **managerial selection bias** rather than a protective effect of fatigue: pitchers who surrender runs early are pulled quickly, while effective pitchers earn deeper outings. Isolating true workload effects requires controlling for command and pitch quality.
 
 ```{r}
 # Load packages and data, document preparation, and fit the baseline.
+library(baseballr)
+library(tidyverse)
+library(broom)
+
+# 1. Pull September 2025 Statcast data
+statcast_raw <- scrape_statcast_savant(
+  start_date = "2025-09-01",
+  end_date = "2025-09-30",
+  player_type = "pitcher"
+)
+
+# 2. Aggregate to starting pitcher appearances (fixing runs_allowed by inning half)
+starting_pitcher_data <- statcast_raw %>%
+  mutate(
+    runs_on_pitch = if_else(
+      inning_topbot == "Top",
+      post_away_score - away_score,
+      post_home_score - home_score
+    )
+  ) %>%
+  group_by(game_pk, game_date, pitcher, player_name) %>%
+  summarise(
+    pitch_count = n(),
+    strikeouts = sum(events == "strikeout", na.rm = TRUE),
+    walks = sum(events == "walk", na.rm = TRUE),
+    avg_velocity = mean(release_speed, na.rm = TRUE),
+    avg_spin_rate = mean(release_spin_rate, na.rm = TRUE),
+    runs_allowed = sum(runs_on_pitch, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  filter(pitch_count >= 30)
+
+# 3. Fit baseline SLR
+baseline_mod <- lm(runs_allowed ~ pitch_count, data = starting_pitcher_data)
+
+tidy(baseline_mod, conf.int = TRUE)
+glance(baseline_mod) %>% select(r.squared, adj.r.squared, sigma, df.residual)
 ```
 
 ```{r}
 # Show a primary figure or table only if it helps answer the question.
+ggplot(starting_pitcher_data, aes(x = pitch_count, y = runs_allowed)) +
+  geom_jitter(width = 0, height = 0.12, alpha = 0.3, color = "#4A708B", size = 1.8) +
+  geom_smooth(aes(color = "Linear baseline (SLR)"), method = "lm", se = TRUE, linewidth = 1) +
+  geom_smooth(aes(color = "LOESS smooth"), method = "loess", se = FALSE, linetype = "dashed", linewidth = 1.1) +
+  scale_color_manual(
+    name = NULL,
+    values = c("Linear baseline (SLR)" = "#C0392B", "LOESS smooth" = "#E67E22")
+  ) +
+  scale_y_continuous(breaks = 0:8) +
+  labs(
+    title = "Runs Allowed vs. Starting Pitcher Workload",
+    subtitle = "September 2025 MLB regular-season starts (30+ pitches)",
+    x = "Total Pitch Count",
+    y = "Runs Allowed"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold"),
+    legend.position = "top",
+    panel.grid.minor = element_blank()
+  )
 ```
 
 ## Going beyond the baseline
