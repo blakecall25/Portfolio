@@ -1,9 +1,9 @@
 ---
-title: "MLB Pitching Workload 2026"
+title: "MLB Pitching Workload"
 subtitle: "Understanding how pitch count, command, and pitch quality jointly drive run prevention helps MLB front offices and coaching staffs optimize bullpen decisions and identify true performance degradation."
 author: "Blake Call, Spencer Snyder"
 date: last-modified
-description: "Replace with a brief description for link previews."
+description: "Modeling September 2025 MLB starting pitcher runs allowed using workload, command, and Statcast pitch metrics."
 ---
 
 **Narrative word count:** Replace with a number from 750 to 1,000.
@@ -20,7 +20,6 @@ To answer this question, we aggregated pitch-level MLB Advanced Media (Statcast)
 
 ## What the baseline shows
 
-**Describe and justify a simple course-based baseline regression model. Interpret the result that best establishes the rest of the story, including its direction, magnitude, scale, and uncertainty. Explain one limitation or unresolved pattern that motivates deeper analysis.**
 We fit a simple linear regression (SLR) predicting runs allowed per start from pitch count alone ($\text{runs\_allowed}_i = \beta_0 + \beta_1\,\text{pitch\_count}_i + \epsilon_i$). This baseline directly tests the naive assumption that heavier in-game workloads correspond to more runs allowed.
 
 Contrary to that intuition, the fitted slope is negative and statistically significant ($\hat{\beta}_1 = -0.019$, $p = 0.007$), meaning every additional 10 pitches thrown is associated with roughly 0.19 fewer runs allowed on average. Still, pitch count alone explains less than 3% of the variance in scoring ($R^2 = 0.0294$), leaving wide uncertainty around individual outings. This counterintuitive negative trend reflects **managerial selection bias** rather than a protective effect of fatigue: pitchers who surrender runs early are pulled quickly, while effective pitchers earn deeper outings. Isolating true workload effects requires controlling for command and pitch quality.
@@ -181,7 +180,7 @@ Details are in the [AI-use record](ai-use.qmd).
 
 ## Data and code
 
-- **Data:** Replace with a working source link or citation and any brief acquisition note needed to reproduce the project.
-- **Repository:** Replace with your repository URL.
+- **Data:** Pitch-level MLB Statcast data (September 1–30, 2025) from [Baseball Savant (MLB Advanced Media)](https://baseballsavant.mlb.com/), retrieved programmatically via `baseballr::scrape_statcast_savant(start_date = "2025-09-01", end_date = "2025-09-30", player_type = "pitcher")` and aggregated to starting pitcher outings of 30+ pitches.
+- **Repository:** https://github.com/blakecall25/Portfolio
 - [AI-use record](ai-use.qmd)
-- **Other sources:** Cite package documentation, articles, code, and other sources that materially informed the work.
+- **Other sources:** Petti & Gilani (`baseballr` R package), Wickham et al. (`tidyverse`), Friedman, Hastie, & Tibshirani (`glmnet`), Fox & Weisberg (`car`), and Robinson et al. (`broom`).
